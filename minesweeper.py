@@ -4,10 +4,6 @@ import random
 
 #Takes user input for board size and verifies that it meets the specified conditions
 
-
-
-
-
 def size_selector():
 
     area = []
@@ -44,7 +40,6 @@ def size_selector():
 
 
 
-
 #takes board size from size_selector and builds the board
 
 def board_builder():
@@ -52,80 +47,74 @@ def board_builder():
     area = size_selector()
     length = area[0]
     width = area[1]
-    board = '''_'''
+    board = '_'
+    
 
     for column in range(width):
         board += '________'
 
     for row in range(length):
+        board += '\n|'
 
-        for segment in range(2):
-            board += '''
-|'''
+        for column in range(width):
+            board += '       |'
         
-            for column in range(width):
-                    board += '       |'
-    
-        board += '''
-|'''
-        
+        board += '\n|'
+
+        for column in range(width):
+            board += '   x   |'
+
+        board += '\n|'
+ 
         for column in range(width):
             board += '_______|'
 
     return [board, area]
 
 
+
+
+
+#takes the number of mines and the area and randomly generates the location for all the mines
+
+def mine_assign(num_of_mines, area):
+    mine_index = []
+
+    while len(mine_index) < num_of_mines:
+        mine = random.randint(0, area - 1)
+
+        if mine not in mine_index:
+            mine_index.append(mine)
     
-#first int position:
-# 2(8 * width + 1) + 5
+    mine_index.sort()
+    
+    return mine_index
+
     
 
-# board[2(8 * width + 1) + 5] = 'x'
-#Figur out how to modify specific squares in board
-#maybe split all 'squares'(center cegment of square) into different strings
-#then re-append with new value between
-#binary bomb values should be stored seperatly for every square in a list
-#list indexes should corrospond to board position
-#nested lists for each row?
 
-
-# def tile_finder(length, width):
-#     tile_index = []
-#     current_index = 2 * (8 * width + 1)
-
-#     for row in range(length):
-#         current_index += 5
-#         tile_index += current_index
-
-#         for collumn in range(width - 1):
-#             current_index += 8
-#             tile_index += current_index
-        
-#         current_index += 2 * (8 * width + 1) + 9
-
-#     return tile_index
-        
-    
 
 
 
 game = board_builder()
 
-board = game[0]
+xboard = game[0]
 length = game[1][0]
 width = game[1][1]
+area = length * width
 
-tile_index = tile_finder(length, width)
+tiles = xboard.split('x')
+clean_board = ' '.join(tiles)
 
-
-for ind in tile_index:
-    print(ind)
-
-for ind in tile_index:
-    print(board[ind])
+num_of_mines = round(length * width * .156)
+mine_index = mine_assign(num_of_mines, area)
 
 
 
 
 
-print(board)
+
+print(num_of_mines)
+print(mine_index)
+print(xboard)
+print(clean_board)
