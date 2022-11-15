@@ -161,14 +161,78 @@ def mine_merger(xboard, mine_index, length, width):
 
             if index_tracker in mine_index:
 
-                row = index_tracker // length
-                ind = index_tracker % length
+                row = index_tracker // width
+                ind = index_tracker % width
                 tile_index[row][ind] += '*'
 
             index_tracker += 1
     
     return tile_index
 
+
+
+
+
+#takes mine ind and adds 1 to the mine counter in its 8 surrounding tiles
+
+def mine_counter(mine_index, length, width):
+    mine_count = []
+    ind = 0
+
+    for list in range(length):
+        mine_count.append([])
+
+        for tile in range(width):
+            mine_count[list].append(0)
+
+    for mine in mine_index:
+
+        row = mine // width
+        ind = mine % width
+
+            #3 tiles above mine
+
+        if row - 1 >= 0:
+
+            if ind - 1 >= 0:
+                mine_count[row - 1][ind - 1] += 1
+
+            mine_count[row - 1][ind] += 1
+
+            if ind + 1 < width:
+                mine_count[row - 1][ind + 1] += 1
+
+        #2 tiles beside mine
+
+        if ind - 1 >= 0:
+            mine_count[row][ind - 1] += 1
+
+        if ind + 1 < width:
+            mine_count[row][ind + 1] += 1
+
+        #3 tiles below mine
+
+        if row + 1 < length:
+
+            if ind - 1 >= 0:
+                mine_count[row + 1][ind - 1] += 1
+
+            mine_count[row + 1][ind] += 1
+
+            if ind + 1 < width:
+                mine_count[row + 1][ind + 1] += 1
+
+    #changes index of mine to '*'
+
+    for mine in mine_index:
+
+        row = mine // width
+        ind = mine % width
+        mine_count[row][ind] = '*'
+
+    return mine_count
+    
+    
                 
             
 
@@ -194,7 +258,8 @@ clean_board = ' '.join(tile_list)
 num_of_mines = mine_amount(area)
 mine_index = mine_assign(num_of_mines, area)
 
-tiles_mines = mine_merger(tile_list, mine_index, length, width)
+tile_mines = mine_merger(tile_list, mine_index, length, width)
+mine_count = mine_counter(mine_index, length, width)
 
 
 
@@ -203,4 +268,5 @@ tiles_mines = mine_merger(tile_list, mine_index, length, width)
 print(mine_index)
 # print(xboard)
 print(clean_board)
-# print(tile_list)
+#print(tile_mines)
+print(mine_count)
