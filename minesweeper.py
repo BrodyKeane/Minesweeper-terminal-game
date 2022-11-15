@@ -233,27 +233,64 @@ def mine_counter(mine_index, length, width):
     return mine_count
     
     
-                
-            
+
+
+
+#adds color to the numbers in mine_counter
+
+def color_counters(mine_index, length, width):
+    mines_count = mine_counter(mine_index, length, width)
+
+    for list in range(len(mines_count)):
+        for counter in range(len(mines_count[list])):
+
+            if mines_count[list][counter] == 1:
+                mines_count[list][counter] = '\033[1;34;40m' + '1\033[1;37;40m'
+
+            if mines_count[list][counter] == 2:
+                mines_count[list][counter] = '\033[1;32;40m' + '2\033[1;37;40m'
+
+            if mines_count[list][counter] == 3:
+                mines_count[list][counter] = '\033[1;31;40m' + '3\033[1;37;40m'
+
+            if mines_count[list][counter] == 4:
+                mines_count[list][counter] = '\033[1;35;40m' + '4\033[1;37;40m'
+
+            if mines_count[list][counter] == 5:
+                mines_count[list][counter] = '\033[1;33;40m' +'5\033[1;37;40m'
+
+            if mines_count[list][counter] == 6:
+                mines_count[list][counter] = '\033[1;36;40m' + '6\033[1;37;40m'
+
+            if mines_count[list][counter] == 7:
+                mines_count[list][counter] = '\033[1;36;40m' + '7\033[1;37;40m'
+
+            if mines_count[list][counter] == 8:
+                mines_count[list][counter] = '\033[1;36;40m' + '8\033[1;37;40m'
+
+    return mines_count
+
+
+
+
 
 #adds mine counters to tile_mines            
     
 def tile_counters(tile_list, mine_index, length, width):
     tile_mines = mine_merger(tile_list, mine_index, length, width)
-    mine_count = mine_counter(mine_index, length, width)
+    mine_count = color_counters(mine_index, length, width)
     tile_counters = tile_mines
 
     for list in range(len(mine_count)):
         for ind in range(len(mine_count[list])):
             tile = mine_count[list][ind]
 
-            if type(tile) == int:
+            if tile != '*':
 
-                if tile > 0:
-                    tile_counters[list][ind] += str(tile)
-
-                elif tile == 0:
+                if tile == 0:
                     tile_counters[list][ind] += ' '
+                else:
+                    tile_counters[list][ind] += str(tile)
 
     return tile_counters
                  
