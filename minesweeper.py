@@ -40,6 +40,40 @@ def size_selector():
 
 
 
+#takes player input for how many mines will be on the board
+
+def mine_amount(area):
+
+    num_of_mines = 0
+
+    decision = input('Would you like to change the number of mines on the board?  ').lower()
+
+    while decision != 'yes' and decision != 'no':
+        decision = input('Please input "yes" or "no"  ').lower()
+
+    if decision == 'yes':
+        while num_of_mines == 0:
+            num = input('How many mines do you want?  ')
+
+            try:    
+                num = int(num)
+            except:
+                continue
+
+            if num > 0 and num < area:
+                num_of_mines = num
+            else:
+                print('Number of mines must be between 0 and {area}'.format(area = area))
+
+    if decision == 'no':
+        num_of_mines = round(area * .156)
+
+    return num_of_mines
+
+
+
+
+
 #takes board size from size_selector and builds the board
 
 def board_builder():
@@ -75,6 +109,27 @@ def board_builder():
 
 
 
+#takes xboard and splits it into (length) nested lists containing (width) tiles each.
+
+def tile_tucker(tile_list, length, width):
+
+    tile_index = []
+    index_tracker = 0
+    
+    for list in range(length):
+        tile_index.append([])
+
+        for tile in range(width):
+            tile_index[list].append(tile_list[index_tracker])
+            index_tracker += 1
+    
+    return tile_index
+
+
+
+
+
+
 #takes the number of mines and the area and randomly generates the location for all the mines
 
 def mine_assign(num_of_mines, area):
@@ -90,7 +145,37 @@ def mine_assign(num_of_mines, area):
     
     return mine_index
 
+
+
+
+
+#takes mine_index and puts mines in tiles
+
+def mine_merger(xboard, mine_index, length, width):
+
+    tile_index = tile_tucker(xboard, length, width)
+    index_tracker = 0
+
+    for list in tile_index:
+        for tile in list:
+
+            if index_tracker in mine_index:
+
+                row = index_tracker // length
+                ind = index_tracker % length
+                tile_index[row][ind] += '*'
+
+            index_tracker += 1
     
+    return tile_index
+
+                
+            
+
+            
+    
+    
+
 
 
 
@@ -103,18 +188,19 @@ length = game[1][0]
 width = game[1][1]
 area = length * width
 
-tiles = xboard.split('x')
-clean_board = ' '.join(tiles)
+tile_list = xboard.split('x')
+clean_board = ' '.join(tile_list)
 
-num_of_mines = round(length * width * .156)
+num_of_mines = mine_amount(area)
 mine_index = mine_assign(num_of_mines, area)
 
+tiles_mines = mine_merger(tile_list, mine_index, length, width)
 
 
 
 
-
-print(num_of_mines)
+# print(num_of_mines)
 print(mine_index)
-print(xboard)
+# print(xboard)
 print(clean_board)
+# print(tile_list)
