@@ -236,9 +236,48 @@ def mine_counter(mine_index, length, width):
                 
             
 
-            
+#adds mine counters to tile_mines            
     
-    
+def tile_counters(tile_list, mine_index, length, width):
+    tile_mines = mine_merger(tile_list, mine_index, length, width)
+    mine_count = mine_counter(mine_index, length, width)
+    tile_counters = tile_mines
+
+    for list in range(len(mine_count)):
+        for ind in range(len(mine_count[list])):
+            tile = mine_count[list][ind]
+
+            if type(tile) == int:
+
+                if tile > 0:
+                    tile_counters[list][ind] += str(tile)
+
+                elif tile == 0:
+                    tile_counters[list][ind] += ' '
+
+    return tile_counters
+                 
+
+
+
+
+#displays full board with all mines and counters visible
+
+def unhide_board(tile_count, width):
+    unnested_list = []
+
+    for list in tile_count:
+        for tile in list:
+            unnested_list += tile
+
+    visible_board = ''.join(unnested_list)
+    visible_board += '   |\n|'
+
+    for column in range(width):
+            visible_board += '_______|'
+
+    return visible_board
+
 
 
 
@@ -258,15 +297,15 @@ clean_board = ' '.join(tile_list)
 num_of_mines = mine_amount(area)
 mine_index = mine_assign(num_of_mines, area)
 
-tile_mines = mine_merger(tile_list, mine_index, length, width)
-mine_count = mine_counter(mine_index, length, width)
-
+tile_count = tile_counters(tile_list, mine_index, length, width)
+visible_board = unhide_board(tile_count, width)
 
 
 
 # print(num_of_mines)
 print(mine_index)
 # print(xboard)
-print(clean_board)
+#print(clean_board)
 #print(tile_mines)
-print(mine_count)
+#print(tile_count)
+print(visible_board)
