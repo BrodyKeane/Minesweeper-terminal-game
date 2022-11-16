@@ -82,6 +82,7 @@ def board_builder():
     length = area[0]
     width = area[1]
     board = '\n       '
+
     width_ind = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
     length_ind = [str(i) for i in range(length)]
 
@@ -316,9 +317,139 @@ def unhide_board(tile_count, width):
     visible_board += '   |\n   |'
 
     for column in range(width):
-            visible_board += '_______|\n'
+        visible_board += '_______|'
+
+    visible_board += '\n'
 
     return visible_board
+
+
+
+
+
+#verfies format for moves and calls move maker
+
+def move_verify(length, width, clean_board, visible_board, mine_counters):
+    game = 'avtive'
+    current_board = clean_board
+    visible_tiles = []
+
+    max_width_ind = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
+    width_ind = [max_width_ind[char] for char in range(width)]
+    length_ind = [str(i) for i in range(length)]
+
+    print('You  make moves in the format "a1" to dig a tile or "a1f" to place a flag')
+
+    while game == 'active':
+        move = input('Input your move:  ')
+
+        if len(move) != 2 and len(move) != 3:
+            print('invalid format')
+            print('You  make moves in the format "a1" to dig a tile or "a1f" to place a flag')
+            continue
+
+        if move[0].upper not in width_ind:
+            print('invalid format')
+            print('First character was not a valid letter')
+            continue
+        try:
+            if int(move[1]) not in length_ind:
+                print('invalid format')
+                print('Second character was not a valid number')
+                continue
+        except:
+            print('invalid format')
+            print('Second character was not a valid number')
+            continue
+
+        if len(move) == 3 and move[2] != 'f':
+            print('invalid format')
+            print('Third charater did not = f')
+            continue
+
+        move_ind = width_ind.find(move[0])
+        move_ind += int(move[1])
+
+        if len(move) == 2:
+            game = mine_checker(move_ind, mine_counters)
+            move_feedback = move_dig(current_board, visible_board, mine_counters, move_ind)
+            visible_tiles = move_feedback[0]
+            current_board = move_feedback[1]
+        
+
+
+
+
+#checks if the players move was a mine
+
+def mine_checker(move_ind, mine_counters):
+    pass
+
+
+
+
+
+#takes move from move_verify and finds all adjacent tiles mine mine_counters = to 0
+
+def move_dig(current_board, visible_board, mine_counters, move_ind):
+
+    tile_queue = [move_ind]
+
+    #tracks list of tiles that are visible to player to prevent infinite search for nearby 0 tiles
+
+    visible_tiles = []
+
+    for list in range(len(mine_counter)):
+        visible_tiles.append([])
+        for counter in mine_counter[list]:
+            visible_tiles[list] += 0
+
+    while len(tile_queue) > 0:
+
+        r = tile_queue[0][1]
+        c = tile_queue[0][0]
+        visible_tiles[r][c] = 1
+
+        current_board[r][c] = visible_board[r][c]
+
+        #checks 4 tile adjacent to first tile in tile_queue for 0 counters and adds 0 counters to tile queue and reveals them to player
+
+        if r - 1 >= 0:
+            if visible_tiles[r - 1][c] == 0:
+                if mine_counters[r - 1][c] == 0:
+                    current_board[r - 1][c] = visible_board[r - 1][c]
+                    visible_tiles[r - 1][c] = 1
+                    tile_queue.append([r - 1, c])
+
+        if c - 1 >= 0:
+            if visible_tiles[r][c - 1] == 0:
+                if mine_counters[r][c - 1] == 0:
+                    current_board[r][c - 1] = visible_board[r][c - 1]
+                    visible_tiles[r][c - 1] = 1
+                    tile_queue.append([r, c - 1])
+
+        if c + 1 < len(mine_counters[0]):
+            if visible_tiles[r][c + 1] == 0:
+                if mine_counters[r][c + 1] == 0:
+                    current_board[r][c + 1] = visible_board[r][c + 1]
+                    visible_tiles[r][c + 1] = 1
+                    tile_queue.append([r, c + 1])
+
+        if r + 1 < len(mine_counters):
+            if visible_tiles[r + 1][c] == 0:
+                if mine_counters[r + 1][c] == 0:
+                    current_board[r + 1][c] = visible_board[r + 1][c]
+                    visible_tiles[r + 1][c] = 1
+                    tile_queue.append([r + 1, c])
+
+        tile_queue.pop(0)
+
+    return [visible_tiles, current_board]
+        
+
+
+
+
 
 
 
@@ -338,6 +469,7 @@ clean_board = ' '.join(tile_list)
 
 num_of_mines = mine_amount(area)
 mine_index = mine_assign(num_of_mines, area)
+mine_counters = mine_counter(mine_index, length, width)
 
 tile_count = tile_counters(tile_list, mine_index, length, width)
 visible_board = unhide_board(tile_count, width)
@@ -351,3 +483,4 @@ visible_board = unhide_board(tile_count, width)
 #print(tile_mines)
 #print(tile_count)
 print(visible_board)
+print(mine_counters)
