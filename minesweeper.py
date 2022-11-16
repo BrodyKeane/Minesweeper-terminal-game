@@ -81,24 +81,29 @@ def board_builder():
     area = size_selector()
     length = area[0]
     width = area[1]
-    board = '_'
-    
+    board = '\n       '
+    width_ind = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
+    length_ind = [str(i) for i in range(length)]
+
+    for column in range(width):
+        board += '\033[1;37;40m' + width_ind[column] + '       '
+    board += '\n   '
 
     for column in range(width):
         board += '________'
 
     for row in range(length):
-        board += '\n|'
+        board += '\n   |'
 
         for column in range(width):
             board += '       |'
         
-        board += '\n|'
+        board += '\n' + length_ind[row] + '  |'
 
         for column in range(width):
             board += '   x   |'
 
-        board += '\n|'
+        board += '\n   |'
  
         for column in range(width):
             board += '_______|'
@@ -163,7 +168,7 @@ def mine_merger(xboard, mine_index, length, width):
 
                 row = index_tracker // width
                 ind = index_tracker % width
-                tile_index[row][ind] += '*'
+                tile_index[row][ind] += '\033[1;31;40m' + '*\033[1;37;40m'
 
             index_tracker += 1
     
@@ -308,10 +313,10 @@ def unhide_board(tile_count, width):
             unnested_list += tile
 
     visible_board = ''.join(unnested_list)
-    visible_board += '   |\n|'
+    visible_board += '   |\n   |'
 
     for column in range(width):
-            visible_board += '_______|'
+            visible_board += '_______|\n'
 
     return visible_board
 
@@ -340,7 +345,7 @@ visible_board = unhide_board(tile_count, width)
 
 
 # print(num_of_mines)
-print(mine_index)
+#print(mine_index)
 # print(xboard)
 #print(clean_board)
 #print(tile_mines)
