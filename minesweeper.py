@@ -323,7 +323,7 @@ def unhide_board(tile_count, width):
 
 #Logic for making moves
 
-def move_maker(length, width, clean_board, mine_counters, visible_board, tile_count, tile_list):
+def move_maker(length, width, clean_board, mine_counters, visible_board, tile_count, tile_list, num_of_mines):
 
     game = 'active'
     active_board = clean_board
@@ -333,6 +333,11 @@ def move_maker(length, width, clean_board, mine_counters, visible_board, tile_co
     while True:
         print(active_board)
         move = move_verify(length, width)
+
+        if win_check(visible_tiles, num_of_mines) == True:
+            print(visible_board)
+            print('You Won!')
+            break
 
         if move[2] == 'dig':
             is_mine = mine_checker(move, mine_counters)
@@ -353,6 +358,11 @@ def move_maker(length, width, clean_board, mine_counters, visible_board, tile_co
             active_tiles = flag(move, active_tiles)
             active_board = active_join(active_tiles, width)
             continue
+    
+    play_again()
+
+        
+
 
 
 
@@ -500,12 +510,30 @@ def find_visible(move, mine_counters, visible_tiles, length, width):
 
         if mine_counters[row][col] == 0:
 
+            #3 tiles above move
+
             if row - 1 >= 0:
                 if visible_tiles[row-1][col] == 0 and mine_counters[row-1][col] != '*':
                     visible_tiles[row-1][col] += 1
 
                     if mine_counters[row-1][col] == 0:
                         tile_queue.append([row-1, col])
+
+                if col - 1 >=0:
+                    if visible_tiles[row-1][col-1] == 0 and mine_counters[row-1][col-1] != '*':
+                        visible_tiles[row-1][col-1] += 1
+
+                        if mine_counters[row-1][col-1] == 0:
+                            tile_queue.append([row-1, col-1])
+
+                if col + 1 < length:
+                    if visible_tiles[row-1][col+1] == 0 and mine_counters[row-1][col+1] != '*':
+                        visible_tiles[row-1][col+1] += 1
+
+                        if mine_counters[row-1][col+1] == 0:
+                            tile_queue.append([row-1, col+1])
+
+            #2 tiles beside move
 
             if col - 1 >= 0:
                 if visible_tiles[row][col-1] == 0 and mine_counters[row][col-1] != '*':
@@ -521,13 +549,29 @@ def find_visible(move, mine_counters, visible_tiles, length, width):
                     if mine_counters[row][col+1] == 0:
                         tile_queue.append([row, col+1])
 
+            #3 tiles below move
+
             if row + 1 < length:
                 if visible_tiles[row+1][col] == 0 and mine_counters[row+1][col] != '*':
                     visible_tiles[row+1][col] += 1
 
                     if mine_counters[row+1][col] == 0:
                         tile_queue.append([row+1, col])
-        
+
+                if col - 1 < 0:
+                    if visible_tiles[row+1][col-1] == 0 and mine_counters[row+1][col-1] != '*':
+                        visible_tiles[row+1][col-1] += 1
+                    
+                        if mine_counters[row+1][col-1] == 0 and mine_counters != '*':
+                            tile_queue.append([row+1, col-1]) 
+
+                if col+1 < width:
+                     if visible_tiles[row+1][col+1] == 0 and mine_counters[row+1][col+1] != '*':
+                        visible_tiles[row+1][col+1] += 1
+                    
+                        if mine_counters[row+1][col+1] == 0 and mine_counters != '*':
+                            tile_queue.append([row+1, col+1])
+
         del tile_queue[0]
 
     return visible_tiles
@@ -563,7 +607,7 @@ def active_join(active_tiles, width):
 
     for row in range(len(active_tiles)):
         for tile in range(len(active_tiles[row])):
-            active_board += active_tiles[row][tile]
+            active_board += str(active_tiles[row][tile])
 
     active_board += '   |\n   |'
 
@@ -581,9 +625,47 @@ def active_join(active_tiles, width):
 
 def flag(move, active_tiles):
 
-    active_tiles[move[1]][move[0]] = active_tiles[move[1]][move[0]][:-1] + '\033[1;31;40m' + 'P\033[1;37;40m'
+    print(active_tiles[move[1]][move[0]][-1])
 
+    if active_tiles[move[1]][move[0]][-1] == ' ':
+        active_tiles[move[1]][move[0]] = active_tiles[move[1]][move[0]][:-1] + '\033[1;31;40m' + 'P\033[1;37;40m'
+
+    else: 
+        print('tile already revealed')
+        
     return active_tiles
+
+
+
+
+
+
+def win_check(visible_tiles, num_of_mines):
+    mine_counter = 0
+
+    for row in range(len(visible_tiles)):
+        for tile in range(len(visible_tiles)):
+            if visible_tiles[row][tile] == 0:
+                mine_counter +=1
+
+    if mine_counter == num_of_mines:
+        return True
+    return False
+
+
+
+
+
+
+def play_again():
+
+    decision = input('Would you like to play again?  ').lower()
+
+    while decision != 'yes' and decision != 'no':
+        decision = input('Please input "yes" or "no"  ').lower()
+
+    if decision == 'yes':
+        main()
 
 
 
@@ -608,16 +690,6 @@ def main():
     tile_count = tile_counters(tile_list, mine_index, length, width)
     visible_board = unhide_board(tile_count, width)
 
-    move_maker(length, width, clean_board, mine_counters, visible_board, tile_count, tile_list)
-
-
-    #print(num_of_mines)
-    #print(mine_index)
-    #print(xboard)
-    #print(clean_board)
-    #print(tile_mines)
-    #print(tile_count)
-    #print(visible_board)
-    #print(mine_counters)
+    move_maker(length, width, clean_board, mine_counters, visible_board, tile_count, tile_list, num_of_mines)
 
 main()
