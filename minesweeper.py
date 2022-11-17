@@ -1,7 +1,5 @@
 import random
 
-
-
 #Takes user input for board size and verifies that it meets the specified conditions
 
 def size_selector():
@@ -292,11 +290,7 @@ def tile_counters(tile_list, mine_index, length, width):
             tile = mine_count[list][ind]
 
             if tile != '*':
-
-                if tile == 0:
-                    tile_counters[list][ind] += ' '
-                else:
-                    tile_counters[list][ind] += str(tile)
+                tile_counters[list][ind] += str(tile)
 
     return tile_counters
                  
@@ -327,160 +321,303 @@ def unhide_board(tile_count, width):
 
 
 
+#Logic for making moves
+
+def move_maker(length, width, clean_board, mine_counters, visible_board, tile_count, tile_list):
+
+    game = 'active'
+    active_board = clean_board
+    active_tiles = tile_space(tile_list, length, width)
+    visible_tiles = list_constructor(length, width)
+
+    while True:
+        print(active_board)
+        move = move_verify(length, width)
+
+        if move[2] == 'dig':
+            is_mine = mine_checker(move, mine_counters)
+
+            if is_mine == False:
+                visible_tiles = find_visible(move, mine_counters, visible_tiles, length, width)
+                active_tiles = board_updater(active_tiles, tile_count, visible_tiles, length, width)
+                active_board = active_join(active_tiles, width)
+                continue
+
+            if is_mine == True:
+                print(visible_board)
+                print('game lost')
+                break
+
+        elif move[2] == 'flag':
+
+            active_tiles = flag(move, active_tiles)
+            active_board = active_join(active_tiles, width)
+            continue
+
+
+
+
+            
+        
+                
+
+
+
+
+
+def tile_space(tile_list, length, width):
+
+    spaced_list = []
+    index_tracker = 0
+    
+    for list in range(length):
+        spaced_list.append([])
+
+        for tile in range(width):
+            spaced_list[list].append(tile_list[index_tracker] + ' ')
+            index_tracker += 1
+
+    return spaced_list
+
+
+
+
+
+
+
+
+
+#constructs a nested list for visible_tiles
+
+def list_constructor(length, width):
+
+    list = []
+
+    for row in range(length):
+        list.append([])
+
+        for col in range(width):
+            list[row].append(0)
+
+    return list
+
+
+
+
+
+
 #verfies format for moves and calls move maker
 
-def move_verify(length, width, clean_board, visible_board, mine_counters):
-    game = 'avtive'
-    current_board = clean_board
-    visible_tiles = []
+def move_verify(length, width):
+    max_width_lst = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
+    width_lst = [max_width_lst[char] for char in range(width)]
+    length_lst = [i for i in range(length)]
+    move_ind = []
 
-    max_width_ind = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
-    width_ind = [max_width_ind[char] for char in range(width)]
-    length_ind = [str(i) for i in range(length)]
+    print('You make moves in the format "a1" to dig a tile or "a1f" to place a flag')
 
-    print('You  make moves in the format "a1" to dig a tile or "a1f" to place a flag')
-
-    while game == 'active':
+    while True:
         move = input('Input your move:  ')
 
-        if len(move) != 2 and len(move) != 3:
+#checks if the letter index is in the provided list for the board
+
+        if move[0].upper() not in width_lst:
             print('invalid format')
-            print('You  make moves in the format "a1" to dig a tile or "a1f" to place a flag')
+            print('First index was not a valid letter')
             continue
 
-        if move[0].upper not in width_ind:
+        elif move[-1] != 'f' and move[-1].isdigit() == False:
             print('invalid format')
-            print('First character was not a valid letter')
+            print('Second index was not a valid number')
             continue
-        try:
-            if int(move[1]) not in length_ind:
+
+#if the move was maked as a flag it checks if it is in the right format
+
+        elif move[-1] == 'f':
+
+            if move[1:-1].isdigit() == False:
                 print('invalid format')
-                print('Second character was not a valid number')
+                print('Second index was not a valid number')
                 continue
-        except:
+
+            elif int(move[1:-1]) not in length_lst:
+                print('invalid format')
+                print('Second index was out of range')
+                continue
+
+            move_ind.append(width_lst.index(move[0].upper()))
+            move_ind.append(int(move[1:-1]))
+            move_ind.append('flag')
+            break
+                
+#if the move was a not a flag then it is a dig. checks format for dig
+
+        elif move[1:].isdigit == False:
             print('invalid format')
-            print('Second character was not a valid number')
+            print('Second index was not a valid number')
             continue
 
-        if len(move) == 3 and move[2] != 'f':
+        elif int(move[1:]) not in length_lst:
             print('invalid format')
-            print('Third charater did not = f')
+            print('Second index was out of range')
             continue
 
-        move_ind = width_ind.find(move[0])
-        move_ind += int(move[1])
+        move_ind.append(width_lst.index(move[0].upper()))
+        move_ind.append(int(move[1:]))
+        move_ind.append('dig')
+        break
 
-        if len(move) == 2:
-            game = mine_checker(move_ind, mine_counters)
-            move_feedback = move_dig(current_board, visible_board, mine_counters, move_ind)
-            visible_tiles = move_feedback[0]
-            current_board = move_feedback[1]
-        
-
-
-
-
-#checks if the players move was a mine
-
-def mine_checker(move_ind, mine_counters):
-    pass
+    return move_ind
 
 
 
 
 
-#takes move from move_verify and finds all adjacent tiles mine mine_counters = to 0
+#checks if input square is a mine
 
-def move_dig(current_board, visible_board, mine_counters, move_ind):
+def mine_checker(move, mine_counters):
 
-    tile_queue = [move_ind]
+    if mine_counters[move[1]][move[0]] == '*':
+        return True
+    else:
+        return False
 
-    #tracks list of tiles that are visible to player to prevent infinite search for nearby 0 tiles
 
-    visible_tiles = []
 
-    for list in range(len(mine_counter)):
-        visible_tiles.append([])
-        for counter in mine_counter[list]:
-            visible_tiles[list] += 0
+
+
+
+#finds all tiles that should be made visible from current move
+
+def find_visible(move, mine_counters, visible_tiles, length, width):
+    tile_queue = [[move[1], move[0]]]
+    visible_tiles[move[1]][move[0]] += 1
 
     while len(tile_queue) > 0:
 
-        r = tile_queue[0][1]
-        c = tile_queue[0][0]
-        visible_tiles[r][c] = 1
+        row = tile_queue[0][0]
+        col = tile_queue[0][1]
 
-        current_board[r][c] = visible_board[r][c]
+        if mine_counters[row][col] == 0:
 
-        #checks 4 tile adjacent to first tile in tile_queue for 0 counters and adds 0 counters to tile queue and reveals them to player
+            if row - 1 >= 0:
+                if visible_tiles[row-1][col] == 0 and mine_counters[row-1][col] != '*':
+                    visible_tiles[row-1][col] += 1
 
-        if r - 1 >= 0:
-            if visible_tiles[r - 1][c] == 0:
-                if mine_counters[r - 1][c] == 0:
-                    current_board[r - 1][c] = visible_board[r - 1][c]
-                    visible_tiles[r - 1][c] = 1
-                    tile_queue.append([r - 1, c])
+                    if mine_counters[row-1][col] == 0:
+                        tile_queue.append([row-1, col])
 
-        if c - 1 >= 0:
-            if visible_tiles[r][c - 1] == 0:
-                if mine_counters[r][c - 1] == 0:
-                    current_board[r][c - 1] = visible_board[r][c - 1]
-                    visible_tiles[r][c - 1] = 1
-                    tile_queue.append([r, c - 1])
+            if col - 1 >= 0:
+                if visible_tiles[row][col-1] == 0 and mine_counters[row][col-1] != '*':
+                    visible_tiles[row][col-1] += 1
+                    
+                    if mine_counters[row][col-1] == 0 and mine_counters != '*':
+                        tile_queue.append([row, col-1])
 
-        if c + 1 < len(mine_counters[0]):
-            if visible_tiles[r][c + 1] == 0:
-                if mine_counters[r][c + 1] == 0:
-                    current_board[r][c + 1] = visible_board[r][c + 1]
-                    visible_tiles[r][c + 1] = 1
-                    tile_queue.append([r, c + 1])
+            if col + 1 < width:
+                if visible_tiles[row][col+1] == 0 and mine_counters[row][col+1] != '*':
+                    visible_tiles[row][col+1] += 1
 
-        if r + 1 < len(mine_counters):
-            if visible_tiles[r + 1][c] == 0:
-                if mine_counters[r + 1][c] == 0:
-                    current_board[r + 1][c] = visible_board[r + 1][c]
-                    visible_tiles[r + 1][c] = 1
-                    tile_queue.append([r + 1, c])
+                    if mine_counters[row][col+1] == 0:
+                        tile_queue.append([row, col+1])
 
-        tile_queue.pop(0)
+            if row + 1 < length:
+                if visible_tiles[row+1][col] == 0 and mine_counters[row+1][col] != '*':
+                    visible_tiles[row+1][col] += 1
 
-    return [visible_tiles, current_board]
+                    if mine_counters[row+1][col] == 0:
+                        tile_queue.append([row+1, col])
+        
+        del tile_queue[0]
+
+    return visible_tiles
         
 
+                
+
+
+
+
+# Updates board using players input
+
+def board_updater(active_tiles, tile_count, visible_tiles, length, width):
+    
+    for row in range(length):
+        for tile in range(width):
+
+            if visible_tiles[row][tile] == 1:
+                active_tiles[row][tile] = (tile_count[row][tile])
+
+    return active_tiles
+
+                
+
+
+
+
+#creates a board using all active tiles
+
+def active_join(active_tiles, width):
+
+    active_board = ''
+
+    for row in range(len(active_tiles)):
+        for tile in range(len(active_tiles[row])):
+            active_board += active_tiles[row][tile]
+
+    active_board += '   |\n   |'
+
+    for column in range(width):
+        active_board += '_______|'
+
+    active_board += '\n'
+
+    return active_board
 
 
 
 
 
 
+def flag(move, active_tiles):
+
+    active_tiles[move[1]][move[0]] = active_tiles[move[1]][move[0]][:-1] + '\033[1;31;40m' + 'P\033[1;37;40m'
+
+    return active_tiles
 
 
 
 
-game = board_builder()
 
-xboard = game[0]
-length = game[1][0]
-width = game[1][1]
-area = length * width
+def main():
 
-tile_list = xboard.split('x')
-clean_board = ' '.join(tile_list)
+    game = board_builder()
 
-num_of_mines = mine_amount(area)
-mine_index = mine_assign(num_of_mines, area)
-mine_counters = mine_counter(mine_index, length, width)
+    xboard = game[0]
+    length = game[1][0]
+    width = game[1][1]
+    area = length * width
 
-tile_count = tile_counters(tile_list, mine_index, length, width)
-visible_board = unhide_board(tile_count, width)
+    tile_list = xboard.split('x')
+    clean_board = ' '.join(tile_list)
+
+    num_of_mines = mine_amount(area)
+    mine_index = mine_assign(num_of_mines, area)
+    mine_counters = mine_counter(mine_index, length, width)
+
+    tile_count = tile_counters(tile_list, mine_index, length, width)
+    visible_board = unhide_board(tile_count, width)
+
+    move_maker(length, width, clean_board, mine_counters, visible_board, tile_count, tile_list)
 
 
+    #print(num_of_mines)
+    #print(mine_index)
+    #print(xboard)
+    #print(clean_board)
+    #print(tile_mines)
+    #print(tile_count)
+    #print(visible_board)
+    #print(mine_counters)
 
-# print(num_of_mines)
-#print(mine_index)
-# print(xboard)
-#print(clean_board)
-#print(tile_mines)
-#print(tile_count)
-print(visible_board)
-print(mine_counters)
+main()
